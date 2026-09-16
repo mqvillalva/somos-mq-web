@@ -708,6 +708,30 @@ html:not([data-fase="4"]) .nav-boletoviaje{display:none!important}
 
 .kv-form-wrap{margin-top:40px;max-width:420px}
 
+/* Regla base que faltaba: sin esto, un elemento oculto con [hidden] pero
+   con una clase que fija display (como .btn o .player) queda VISIBLE igual,
+   porque la regla de autor le gana a la hoja de estilos del navegador.
+   Con !important, [hidden] gana siempre, sin tocar cada componente. */
+[hidden]{display:none!important}
+
+/* ===========================================================
+   PRE-ESCUCHA CON CÓDIGO — visible/oculta según fecha (JS),
+   forzable con data-preescucha en la sección (ver script al pie).
+   =========================================================== */
+.aviso-pe{display:block;background:var(--amarillo);color:var(--negro)}
+.aviso-pe a{display:block;text-align:center;padding:10px 16px;font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.02em;color:var(--negro);text-decoration:none}
+.aviso-pe a:hover{background:#FFE571}
+#preescucha{background:var(--negro-prof)}
+.pe-cancion{font-family:var(--sans);font-weight:500;font-size:14px;color:var(--gris);margin-bottom:18px}
+.pe-cancion strong{color:var(--blanco);font-weight:700}
+.pe-form{display:flex;gap:10px;max-width:380px;flex-wrap:wrap}
+.pe-form .campo{flex:1;min-width:160px;text-transform:uppercase;letter-spacing:.06em}
+.pe-sumarse{margin-top:14px}
+#pePlayer{margin-top:22px;max-width:460px}
+.pe-salio p{max-width:52ch}
+.pe-salio p:first-child{font-family:var(--sans);font-weight:700;font-size:1.1rem;color:var(--blanco);margin-bottom:8px}
+.pe-salio .btn{margin-top:16px}
+
 </style>
 </head>
 <body>
@@ -813,6 +837,9 @@ document.documentElement.classList.add('js');
     </div>
   </div>
 </nav>
+<div class="aviso-pe" id="avisoPe" hidden>
+  <a href="#preescucha"><span id="avisoPeTxt">Pre-escucha disponible</span> — escuchá antes que nadie →</a>
+</div>
 <header class="hero" id="top">
   <svg class="rieles" viewBox="0 0 1400 900" preserveAspectRatio="none" aria-hidden="true">
     <line x1="-100" y1="900" x2="640" y2="300"/>
@@ -1064,6 +1091,47 @@ document.documentElement.classList.add('js');
     </div>
   </div>
 </section>
+<!-- PRE-ESCUCHA CON CÓDIGO — data-preescucha="auto" calcula el estado según la
+     fecha (ver script al pie: FECHAS_PREESCUCHA). Para forzar un estado sin
+     esperar la fecha, cambiar acá el valor por: "oculto", "codigo:sk",
+     "salio:sk" (Sé que estás) o "codigo:pt", "salio:pt" (Pensamiento). -->
+<section id="preescucha" data-preescucha="codigo:sk" hidden>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num dato">Pre-escucha</span>
+      <h2>Antes que nadie</h2>
+      <p>Los de la lista de pasajeros escuchan el tema entero, un día antes de que salga. El código llega por el grupo de WhatsApp.</p>
+    </div>
+
+    <div class="pe-vista" data-pe-vista="codigo" hidden>
+      <p class="pe-cancion">Pre-escucha de <strong id="peTitulo">—</strong></p>
+      <form class="pe-form" id="peForm" novalidate>
+        <input class="campo" type="text" id="peInput" placeholder="Código" autocomplete="off" aria-label="Código de pre-escucha">
+        <button class="btn btn-1" type="submit">Escuchar</button>
+      </form>
+      <p class="bf-error" id="peError" hidden>Ese código no es. Llega por el grupo de la lista de pasajeros.</p>
+      <a class="btn btn-2 pe-sumarse" id="peSumarse" href="#boleto" hidden>Sumate a la lista de pasajeros</a>
+
+      <div class="player" id="pePlayer" hidden oncontextmenu="return false">
+        <button class="pl-btn" id="peBtn" type="button" aria-label="Reproducir">
+          <span class="pl-ico" id="peIco"></span>
+        </button>
+        <div class="pl-cuerpo">
+          <div class="pl-tit">Pre-escucha · <strong id="pePlTit">—</strong></div>
+          <div class="pl-barra" id="peBarra"><div class="pl-prog" id="peProg"></div></div>
+        </div>
+        <span class="pl-t" id="peT">0:00</span>
+        <audio id="peAudio" preload="none" controlslist="nodownload noplaybackrate" oncontextmenu="return false"></audio>
+      </div>
+    </div>
+
+    <div class="pe-vista pe-salio" data-pe-vista="salio" hidden>
+      <p>Ya salió <strong id="peTituloSalio">—</strong>.</p>
+      <p>Escuchala en Spotify y guardala.</p>
+      <a class="btn btn-1" href="https://open.spotify.com/artist/4AoTeI2AvlZ4glnDD15XKM" target="_blank" rel="noopener">Escuchar en Spotify</a>
+    </div>
+  </div>
+</section>
 <section id="bio">
   <div class="wrap">
     <div class="sec-head">
@@ -1240,6 +1308,7 @@ document.documentElement.classList.add('js');
           <li>Púa con llavero portapúa</li>
           <li>Póster A3+ (mapa de estaciones + letras)</li>
           <li>Pasaje de Vuelta</li>
+          <li>Acceso a la prueba de sonido, antes de abrir las puertas.</li>
         </ul>
       </article>
       <article class="kit kit-destacado">
@@ -1252,6 +1321,7 @@ document.documentElement.classList.add('js');
           <li>CD físico</li>
           <li>Dedicatoria personalizada + firma</li>
           <li>Póster firmado</li>
+          <li>Acceso a la prueba de sonido, antes de abrir las puertas.</li>
         </ul>
       </article>
       <article class="kit kit-destacado">
@@ -1266,6 +1336,7 @@ document.documentElement.classList.add('js');
           <li>2 pósters A3+</li>
           <li>2 púas con llavero</li>
           <li>Pasaje de Vuelta para los dos</li>
+          <li>Acceso a la prueba de sonido, antes de abrir las puertas.</li>
         </ul>
         <p class="kit-nota">Opcional: +$5.000 con 1 CD ($30.000) · +$10.000 con 2 CD ($35.000)</p>
       </article>
@@ -1277,7 +1348,7 @@ document.documentElement.classList.add('js');
       <ul>
         <li>Entrás por lista, con tu nombre, sin hacer fila</li>
         <li>2x1: pagás uno, entran dos</li>
-        <li>Elegís un tema para el próximo setlist</li>
+        <li>Votás 3 temas del disco para la próxima fecha: entran los 5 más votados</li>
       </ul>
       <p>Se puede renovar siempre, pagando la diferencia hasta la entrada de esa fecha — incluso si te perdiste alguna. Nunca se pierde por faltar una vez.</p>
     </div>
@@ -1579,6 +1650,130 @@ document.documentElement.classList.add('js');
       });
     });
   };
+})();
+</script>
+
+<!-- PRE-ESCUCHA CON CÓDIGO — un tema por vez, gateado por fecha (hora Argentina,
+     UTC-3). Nada de esto reemplaza al sistema de fases (data-fase): esta sección
+     se muestra/oculta sola según FECHAS_PREESCUCHA, o se puede forzar con el
+     atributo data-preescucha de <section id="preescucha"> (ver comentario ahí).
+     Los códigos (SINGLES.*.codigo) y el audio (SINGLES.*.audioSrc) son lo único
+     que hay que tocar para cada lanzamiento — ver Resumen_Cowork.md. -->
+<script>
+(function(){
+  var SINGLES = {
+    sk: {
+      titulo: 'Sé que estás',
+      codigo: '05SEQUEESTAS',
+      audioSrc: '',
+      codeAt:    new Date('2026-09-24T00:00:00-03:00'),
+      releaseAt: new Date('2026-09-25T00:00:00-03:00'),
+      hideAt:    new Date('2026-09-26T00:00:00-03:00')
+    },
+    pt: {
+      titulo: 'Pensamiento',
+      codigo: 'VAGON08',
+      audioSrc: '',
+      codeAt:    new Date('2026-10-08T00:00:00-03:00'),
+      releaseAt: new Date('2026-10-09T00:00:00-03:00'),
+      hideAt:    new Date('2026-10-10T00:00:00-03:00')
+    }
+  };
+  var ORDEN = ['sk','pt'];
+
+  function estadoAuto(){
+    var ahora = new Date();
+    for(var i=0;i<ORDEN.length;i++){
+      var id = ORDEN[i], s = SINGLES[id];
+      if(ahora >= s.codeAt && ahora < s.releaseAt) return {vista:'codigo', single:id};
+      if(ahora >= s.releaseAt && ahora < s.hideAt) return {vista:'salio', single:id};
+    }
+    return {vista:'oculto', single:null};
+  }
+
+  function estadoForzado(valor){
+    if(!valor || valor === 'auto') return null;
+    if(valor === 'oculto') return {vista:'oculto', single:null};
+    var partes = valor.split(':');
+    if(partes.length === 2 && SINGLES[partes[1]]) return {vista:partes[0], single:partes[1]};
+    return null;
+  }
+
+  var sec = document.getElementById('preescucha');
+  if(!sec) return;
+  var estado = estadoForzado(sec.dataset.preescucha) || estadoAuto();
+
+  var aviso = document.getElementById('avisoPe'), avisoTxt = document.getElementById('avisoPeTxt');
+
+  if(estado.vista === 'oculto' || !estado.single){
+    sec.hidden = true;
+    if(aviso) aviso.hidden = true;
+    return;
+  }
+
+  sec.hidden = false;
+  var single = SINGLES[estado.single];
+  var vCodigo = sec.querySelector('[data-pe-vista="codigo"]');
+  var vSalio = sec.querySelector('[data-pe-vista="salio"]');
+
+  if(estado.vista === 'codigo'){
+    vCodigo.hidden = false;
+    document.getElementById('peTitulo').textContent = single.titulo;
+    document.getElementById('pePlTit').textContent = single.titulo;
+    if(aviso){ aviso.hidden = false; if(avisoTxt) avisoTxt.textContent = 'Pre-escucha de "'+single.titulo+'" disponible'; }
+
+    var form = document.getElementById('peForm'), input = document.getElementById('peInput'),
+        err = document.getElementById('peError'), sumarse = document.getElementById('peSumarse'),
+        player = document.getElementById('pePlayer'), audio = document.getElementById('peAudio');
+
+    function revelarPlayer(){
+      form.hidden = true;
+      err.hidden = true;
+      sumarse.hidden = true;
+      if(single.audioSrc){ audio.src = single.audioSrc; }
+      player.hidden = false;
+    }
+
+    try{
+      if(localStorage.getItem('pe_ok_'+estado.single) === '1'){ revelarPlayer(); }
+    }catch(e){}
+
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      var v = (input.value||'').trim().toUpperCase();
+      if(v === single.codigo){
+        try{ localStorage.setItem('pe_ok_'+estado.single, '1'); }catch(e){}
+        revelarPlayer();
+      } else {
+        err.hidden = false;
+        sumarse.hidden = false;
+      }
+    });
+
+    (function(){
+      var a=audio, b=document.getElementById('peBtn'), p=document.getElementById('peProg'),
+          t=document.getElementById('peT'), barra=document.getElementById('peBarra');
+      function fmt(s){ s=Math.floor(s||0); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+      b.addEventListener('click', function(){ a.paused ? a.play() : a.pause(); });
+      a.addEventListener('play', function(){ b.classList.add('sonando'); b.setAttribute('aria-label','Pausar'); });
+      a.addEventListener('pause', function(){ b.classList.remove('sonando'); b.setAttribute('aria-label','Reproducir'); });
+      a.addEventListener('timeupdate', function(){
+        if(a.duration){ p.style.width = (a.currentTime/a.duration*100)+'%'; }
+        t.textContent = fmt(a.currentTime);
+      });
+      a.addEventListener('ended', function(){ p.style.width='0%'; t.textContent='0:00'; });
+      barra.addEventListener('click', function(e){
+        var r = barra.getBoundingClientRect();
+        if(a.duration){ a.currentTime = ((e.clientX-r.left)/r.width)*a.duration; }
+      });
+    })();
+  }
+
+  if(estado.vista === 'salio'){
+    vSalio.hidden = false;
+    document.getElementById('peTituloSalio').textContent = single.titulo;
+    if(aviso){ aviso.hidden = false; if(avisoTxt) avisoTxt.textContent = '"'+single.titulo+'" ya salió'; }
+  }
 })();
 </script>
 
