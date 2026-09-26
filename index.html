@@ -949,7 +949,12 @@ document.documentElement.classList.add('js');
       <h2>El recorrido</h2>
       <p>El disco entero, en orden. Tres estaciones ya salieron. El resto llega en octubre.</p>
     </div>
-    <div class="adelanto" id="adelanto">
+    <!-- ADELANTO FLOTANTE — apagado el 25/09/2026, cuando "Sé que estás" salió
+         entera. Para volver a prenderlo con un adelanto nuevo: sacar el hidden
+         de acá abajo, cambiar el audio de #plAudio y los textos del cartel LED,
+         .pl-tit y .tp-tit. Mientras esté hidden, el reproductor flotante del
+         pie tampoco aparece ni suena (ver el script del talón). -->
+    <div class="adelanto" id="adelanto" hidden>
       <figure class="cartel-fig">
         <div class="cartel-led" role="img" aria-label="Cartel LED de tren: Próxima estación: Sé que estás">
           <span class="cl-tornillo a"></span><span class="cl-tornillo b"></span>
@@ -1008,11 +1013,11 @@ document.documentElement.classList.add('js');
           <span class="est-nom">XXXXXXXXXXX</span>
           <span class="est-tag">En andén</span>
         </li>
-        <li class="est e-proxima">
+        <li class="est e-salio">
           <span class="punto" aria-hidden="true"></span>
           <span class="est-n">05</span>
           <span class="est-nom">Sé que estás<span class="est-sub">single</span></span>
-          <span class="est-tag">Próxima</span>
+          <span class="est-tag">Salió</span>
         </li>
         <li class="est e-anden">
           <span class="punto" aria-hidden="true"></span>
@@ -1121,6 +1126,7 @@ document.documentElement.classList.add('js');
       <h2>Lo que ya está sonando</h2>
     </div>
     <div class="grilla-fotos">
+      <div class="spotify-embed" data-spotify-uri="spotify:track:06JoMWycvtoqTHKGHeb8im" style="min-height:152px" title="Sé que estás, en Spotify"></div>
       <div class="spotify-embed" data-spotify-uri="spotify:track:4ENewO2WvTlOw3Gc3Xxz6A" style="min-height:152px" title="Estrellado, en Spotify"></div>
       <div class="spotify-embed" data-spotify-uri="spotify:track:47Ie9I8AAhTzJQNztW5USU" style="min-height:152px" title="Rompiendo cabezas, en Spotify"></div>
       <div class="spotify-embed" data-spotify-uri="spotify:track:13C2tcTsjTC19imPzhVQH9" style="min-height:152px" title="No llores por mí, Argentina, en Spotify"></div>
@@ -1518,6 +1524,8 @@ document.documentElement.classList.add('js');
       html    = document.documentElement;
   if(!anden || !audio) return;
   if(getComputedStyle(anden).display === 'none') return;   /* fase 1: sin panel de entrada, sin autoplay */
+  var bloqueAdelanto = document.getElementById('adelanto');
+  if(!bloqueAdelanto || bloqueAdelanto.hidden) return;      /* sin adelanto cargado: ni talón ni audio */
 
   var tpTit = document.querySelector('.tp-tit'),
       tituloOriginal = tpTit ? tpTit.innerHTML : '',
