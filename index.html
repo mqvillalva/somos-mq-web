@@ -1524,20 +1524,26 @@ document.documentElement.classList.add('js');
       html    = document.documentElement;
   if(!anden || !audio) return;
   if(getComputedStyle(anden).display === 'none') return;   /* fase 1: sin panel de entrada, sin autoplay */
+  /* Puede no haber adelanto cargado (entre un single y el siguiente). En ese
+     caso el andén tiene que seguir funcionando igual —es la puerta de entrada
+     al sitio—, pero sin audio y sin el talón del pie. OJO: no cortar acá con
+     un return, porque abajo se engancha el botón de embarcar y sin eso el
+     panel queda sin salida. */
   var bloqueAdelanto = document.getElementById('adelanto');
-  if(!bloqueAdelanto || bloqueAdelanto.hidden) return;      /* sin adelanto cargado: ni talón ni audio */
+  var hayAdelanto = !!(bloqueAdelanto && !bloqueAdelanto.hidden);
 
   var tpTit = document.querySelector('.tp-tit'),
       tituloOriginal = tpTit ? tpTit.innerHTML : '',
       pendiente = false;
 
   /* un solo adelanto por ahora: se repite para que acompañe la visita */
-  audio.loop = true;
+  if(hayAdelanto) audio.loop = true;
 
   /* El audio viene embebido como data: URI. Safari —y abrir el archivo con
      doble clic (file://)— muchas veces se niega a reproducirlo así. Pasarlo a
      Blob es lo mismo para la persona y funciona en todos los navegadores. */
   (function prepararAudio(){
+    if(!hayAdelanto) return;
     try{
       var src = audio.getAttribute('src') || '', m = /^data:([^;]+);base64,([\s\S]+)$/.exec(src);
       if(m){
@@ -1553,6 +1559,7 @@ document.documentElement.classList.add('js');
   /* Arranca el adelanto. Si el navegador lo bloquea igual, no se pierde en
      silencio: el talón lo dice y se reintenta en el próximo toque. */
   function sonar(){
+    if(!hayAdelanto) return;
     var p;
     try{ p = audio.play(); }catch(e){}
     if(p && p.catch) p.catch(function(){
@@ -1575,13 +1582,18 @@ document.documentElement.classList.add('js');
     html.style.overflow = '';
     setTimeout(function(){
       anden.style.display = 'none';
-      talon.classList.add('visible');
-      medirAdelanto();
+      if(hayAdelanto){
+        talon.classList.add('visible');
+        medirAdelanto();
+      }
     }, 900);
   }
 
   if(subir)    subir.addEventListener('click', function(){ entrar(true); });
   if(silencio) silencio.addEventListener('click', function(){ entrar(false); });
+
+  /* De acá para abajo es todo el talón y el audio: si no hay adelanto, no va. */
+  if(!hayAdelanto) return;
 
   /* --- el talón y el reproductor de la sección son el mismo audio --- */
   function pintar(){
