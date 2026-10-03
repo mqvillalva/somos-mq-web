@@ -215,6 +215,7 @@ h1{
 .boleto-ok{display:flex;flex-direction:column;gap:5px;padding:14px 0}
 .boleto-ok strong{font-family:var(--sans);font-weight:600;font-size:clamp(17px,1.9vw,22px);color:#f6f3fa}
 .boleto-ok span{font-family:var(--sans);font-size:clamp(13px,1.4vw,16px);color:rgba(244,241,248,.72)}
+.boleto-ok .btn{margin-top:12px}
 .boleto-stub{flex:none;width:var(--stub);display:flex;align-items:center;justify-content:center;gap:clamp(9px,1.6vw,18px);padding:24px 0;border-left:2px dashed rgba(255,255,255,.35);background:linear-gradient(180deg,#5b3a86,#432a66)}
 .stub-txt,.stub-n{writing-mode:vertical-rl;white-space:nowrap;font-family:var(--sans);font-size:clamp(9.5px,1.15vw,14px)}
 .stub-txt{font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#e8c34a}
@@ -924,17 +925,18 @@ document.documentElement.classList.add('js');
         <div class="linea-corte"></div>
         <div class="boleto-cuerpo">
           <h3><span class="oculta-nombre">Unite al viaje</span><span class="revela-nombre">Subite al tren</span></h3>
-          <p><span class="oculta-nombre">Dejá tu WhatsApp y te sumamos al canal para enterarte las novedades antes que nadie.</span><span class="revela-nombre">Dejá tu WhatsApp y te sumamos al canal — vas a escuchar el disco antes que nadie.</span></p>
+          <p><span class="oculta-nombre">Dejá tu nombre y entrá al canal para enterarte las novedades antes que nadie.</span><span class="revela-nombre">Dejá tu nombre y entrá al canal — vas a escuchar el disco antes que nadie.</span></p>
           <form class="boleto-form" id="bfForm" novalidate>
             <input class="bf-trampa" type="text" name="sitio" tabindex="-1" autocomplete="off" aria-hidden="true" placeholder="Dejar vacío">
-            <input class="campo" type="text" placeholder="Nombre" aria-label="Nombre">
-            <input class="campo" type="tel" placeholder="tu WhatsApp" aria-label="WhatsApp" required>
-            <p class="bf-error ancho" id="bfError" hidden>Poné tu WhatsApp para subir al tren.</p>
+            <input class="campo" type="text" placeholder="Nombre" aria-label="Nombre" required>
+            <input class="campo" type="text" placeholder="Apellido" aria-label="Apellido" required>
+            <p class="bf-error ancho" id="bfError" hidden>Poné tu nombre y tu apellido para subir al tren.</p>
             <button class="btn btn-1 ancho" type="submit">Subir al tren</button>
           </form>
           <div class="boleto-ok" id="bfOk" hidden>
             <strong>Ya estás en la lista</strong>
-            <span>Te avisamos apenas suba al andén.</span>
+            <span>Último paso: entrá al canal de WhatsApp. Ahí avisamos todo primero.</span>
+            <a class="btn btn-1" href="https://whatsapp.com/channel/0029VbDlpOb23n3VisS5Ra3e" target="_blank" rel="noopener">Entrar al canal</a>
           </div>
         </div>
         <div class="linea-corte"></div>
@@ -1457,20 +1459,29 @@ document.documentElement.classList.add('js');
     var f=document.getElementById(idForm), ok=document.getElementById(idOk),
         err=document.getElementById(idError);
     if(!f||!ok) return;
-    var nombre=f.querySelector('input[type=text]:not(.bf-trampa)'),
+    var textos=f.querySelectorAll('input[type=text]:not(.bf-trampa)'),
+        nombre=textos[0],
+        apellido=textos[1]||null,
         wa=f.querySelector('input[type=tel]'),
         trampa=f.querySelector('.bf-trampa'),
         boton=f.querySelector('button[type=submit]'),
         textoBoton=boton?boton.textContent:'';
 
     function avisar(m){ err.textContent=m; err.hidden=false; }
-    [nombre,wa].forEach(function(i){ if(i) i.addEventListener('input',function(){ err.hidden=true; }); });
+    [nombre,apellido,wa].forEach(function(i){ if(i) i.addEventListener('input',function(){ err.hidden=true; }); });
+
+    function texto(i){ return (i && i.value || '').trim(); }
 
     f.addEventListener('submit',function(e){
       e.preventDefault();
-      var v=(wa.value||'').replace(/\D/g,'');
-      if(v.length<8){
-        avisar(msgError); wa.focus(); return;
+      /* El formulario de la lista pide nombre y apellido; el del Boleto de
+         Viaje pide WhatsApp porque hay que coordinar el pago. */
+      if(wa){
+        if((wa.value||'').replace(/\D/g,'').length<8){
+          avisar(msgError); wa.focus(); return;
+        }
+      } else if(!texto(nombre) || !texto(apellido)){
+        avisar(msgError); (texto(nombre) ? apellido : nombre).focus(); return;
       }
       if(boton){ boton.disabled=true; boton.textContent='Subiendo…'; }
       err.hidden=true;
@@ -1479,8 +1490,10 @@ document.documentElement.classList.add('js');
         method:'POST',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body:JSON.stringify({
-          nombre:(nombre&&nombre.value||'').trim(),
-          whatsapp:(wa.value||'').trim(),
+          /* nombre y apellido van juntos en el mismo campo: la planilla ya
+             tiene esa columna y así no hay que tocar el Apps Script */
+          nombre:[texto(nombre),texto(apellido)].filter(Boolean).join(' '),
+          whatsapp:texto(wa),
           sitio:(trampa&&trampa.value||'')
         })
       })
@@ -1497,7 +1510,7 @@ document.documentElement.classList.add('js');
   }
 
   initFormularioLista('bfForm','bfOk','bfError',
-    'Poné tu WhatsApp para subir al tren.',
+    'Poné tu nombre y tu apellido para subir al tren.',
     'No pudimos guardar tu boleto. Probá de nuevo, o escribinos a somos.mq.musica@gmail.com.');
 
   initFormularioLista('kvForm','kvOk','kvError',
